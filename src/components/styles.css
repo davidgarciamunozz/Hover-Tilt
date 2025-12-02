@@ -16,9 +16,6 @@ body {
     place-content: center;
     min-height: 600px;
     min-width: 400px;
-    background: linear-gradient(135deg, #fd746c, #ff9068);
-    padding: 2rem;
-    color: white;
 }
 
 input {
