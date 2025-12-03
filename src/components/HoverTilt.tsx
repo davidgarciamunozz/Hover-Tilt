@@ -9,8 +9,8 @@ export function HoverTiltDemo() {
                 <hover-tilt
                     shadow
                     glare-hue="180"
-                    glare-mask="url(/mask/BackLines.png)"
-                    glare-mask-mode="luminance"
+                    glare-mask="url(/mask/BackLines.svg)"
+                    glare-mask-mode="alpha"
                     glare-intensity={4}
                     blend-mode="luminosity"
                     className="[&::part(container)]:rounded-[4.55%/3.5%]"
@@ -66,10 +66,10 @@ export function HoverTiltDemo() {
                     shadow-blur="30"
                     scale-factor="1.15"
                     glare-hue="180"
-                    glare-mask="url(/mask/w-mark-pattern.png)"
-                    glare-mask-mode="luminance"
-                    glare-intensity={5}
-                    blend-mode="plus-lighter"
+                    glare-mask="url(/mask/w-mark-pattern.svg)"
+                    glare-mask-mode="alpha"
+                    glare-intensity={1}
+                    blend-mode="overlay"
                     spring-options='{ "stiffness": 0.08, "damping": 0.15 }'
                     className="luminance-beam stacked-3d"
                 >
