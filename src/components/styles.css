@@ -39,3 +39,87 @@ input:focus {
     transition: border 0.6s ease-out, outline 0.3s ease-out,
         box-shadow 0.3s ease-out;
 }
+
+.stacked-3d::part(tilt) {
+    /* by default, the will-change list is: transform, box-shadow, opacity */
+    will-change: transform, box-shadow, mask;
+    /* we remove the 'opacity' property from the will-change list, because when 'opacity'
+      is set; the 3d context becomes "flat" and will not allow parallax effects. */
+}
+
+.stacked-3d::part(container) {
+    /* Ensure the container matches the content height exactly */
+    height: fit-content;
+    padding: 0;
+    margin: 0;
+}
+
+.stacked-3d::part(tilt)::before {
+    z-index: 1;
+    /* make sure the glare is on top of the background image */
+}
+
+.stacked-3d-content {
+    --depth: 60px;
+    /* an arbitrary depth value */
+    --layer-z: max(var(--hover-tilt-opacity) * var(--depth), 0px);
+    /* max is used so the layers dont go behind the background */
+    --shadow-opacity: calc(var(--hover-tilt-opacity) * 0.4);
+    /* shadow is hidden when the layer is not active */
+    --shadow-size: calc(var(--depth) / 5);
+    /* shadow size is 1/5 of the depth */
+    --shadow-offset: calc(var(--depth) / 8);
+    /* shadow offset is 1/8 of the depth */
+    --shadow-offset-x: calc(var(--shadow-x) * var(--shadow-offset));
+    --shadow-offset-y: calc(var(--shadow-y) * var(--shadow-offset));
+
+    /* this is essential for the 3d effect to work */
+    transform-style: preserve-3d;
+    position: relative;
+    /* Let the container size itself based on the images, matching other cards */
+    display: inline-block;
+    /* Ensure no extra spacing that could affect parent height */
+    margin: 0;
+    padding: 0;
+    line-height: 0;
+    vertical-align: top;
+}
+
+.stacked-3d-bg {
+    /* background stays at the base layer and determines container size */
+    position: relative;
+    z-index: 1;
+    display: block;
+}
+
+.stacked-3d-logo {
+    /* pop the logo and image to the front of the container */
+    --scale-factor: calc(1 + (var(--hover-tilt-opacity) * 0.05));
+    /* scale up to 25% larger on hover for more noticeable pop effect */
+    transform: translateZ(var(--layer-z)) scale(var(--scale-factor));
+    /* apply a dynamic drop shadow to the logo and image */
+    filter: drop-shadow(var(--shadow-offset-x) var(--shadow-offset-y) var(--shadow-size) rgba(0, 0, 0, var(--shadow-opacity)));
+    /* ensure it appears above the background */
+    position: absolute;
+    top: 0;
+    left: 2px;
+    /* slight offset to the right */
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* performance consideration */
+    will-change: transform, filter;
+}
+
+/* Responsive layout tweaks */
+@media (max-width: 768px) {
+    hover-tilt img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .stacked-3d-content {
+        width: 100%;
+    }
+}
