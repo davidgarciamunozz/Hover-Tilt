@@ -250,8 +250,14 @@ hover-tilt.hidden {
     overflow: hidden;
     width: 100%;
     height: 100%;
-    transform: translateZ(0);
-    /* Fix for Safari/stacking context */
+
+    /* Performance optimizations - force hardware acceleration */
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
 }
 
 .vstar-card-content>* {
@@ -273,6 +279,9 @@ hover-tilt.hidden {
     z-index: 2;
     width: 100%;
     height: 100%;
+
+    /* Performance hints for animated properties */
+    will-change: transform, opacity, background-position, filter;
 }
 
 /* Masking */
@@ -374,4 +383,54 @@ hover-tilt.hidden {
 
     mix-blend-mode: hard-light;
     opacity: calc(var(--card-opacity)*(var(--pointer-from-center)*.75));
+}
+
+/* Mobile Performance Optimizations */
+@media screen and (max-width: 900px) {
+
+    /* Reduce complexity of shine effect on mobile */
+    .vstar-card-content .card__shine,
+    .vstar-card-content .card__shine:after {
+        /* Simplify background layers - remove one gradient layer */
+        background-size: var(--imgsize), 200% 500%, 200% 100%, 200% 100%;
+
+        /* Reduce filter intensity */
+        filter: brightness(calc((var(--pointer-from-center) * .5) + .35)) contrast(1.5) saturate(1);
+    }
+
+    .vstar-card-content .card__shine:after {
+        /* Lighter blend mode for better performance */
+        mix-blend-mode: overlay;
+        filter: brightness(calc((var(--pointer-from-center) * .5) + .5)) contrast(1.2) saturate(1.2);
+    }
+
+    /* Simplify ::before pseudo-element */
+    .vstar-card-content .card__shine::before {
+        opacity: 0.5;
+        /* Simpler blend mode */
+        mix-blend-mode: overlay;
+    }
+
+    /* Reduce glare complexity */
+    .vstar-card-content .card__glare {
+        filter: brightness(.8) contrast(1.5);
+        /* Lighter blend mode */
+        mix-blend-mode: overlay;
+    }
+}
+
+/* Extra small devices - further reduce complexity */
+@media screen and (max-width: 600px) {
+
+    .vstar-card-content .card__shine,
+    .vstar-card-content .card__shine:after {
+        /* Even simpler on very small screens */
+        background-blend-mode: soft-light, hue;
+        filter: brightness(calc((var(--pointer-from-center) * .4) + .4)) contrast(1.3) saturate(.9);
+    }
+
+    .vstar-card-content .card__shine::before {
+        /* Reduce opacity further */
+        opacity: 0.3;
+    }
 }
