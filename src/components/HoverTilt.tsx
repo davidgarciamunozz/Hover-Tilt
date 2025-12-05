@@ -1,7 +1,7 @@
 import 'hover-tilt/web-component';
 import './styles.css'
 import { useState, useRef, useEffect } from 'react';
-import { useIntersectionObserver, useIsMobile } from '../hooks/usePerformance';
+import { useIsMobile } from '../hooks/usePerformance';
 
 export function HoverTiltDemo() {
     // Performance optimizations
@@ -17,10 +17,6 @@ export function HoverTiltDemo() {
     const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
     // Store transform values for each card
     const [cardTransforms, setCardTransforms] = useState<Map<number, string>>(new Map());
-
-    // Intersection observer for Charizard (most performance-intensive card)
-    const charizardRef = useRef<HTMLDivElement>(null);
-    const charizardVisible = useIntersectionObserver(charizardRef);
 
     // Calculate transform to center the active card
     useEffect(() => {
@@ -172,10 +168,7 @@ export function HoverTiltDemo() {
 
                 {/* Charizard - with flip */}
                 <div
-                    ref={(el) => {
-                        cardRefs.current[2] = el;
-                        if (el) (charizardRef as any).current = el;
-                    }}
+                    ref={el => { cardRefs.current[2] = el; }}
                     className={`card-flip-container ${!firstFlipDone.has(2) && rotations.get(2) ? 'first-flip' : ''} ${activeCard === 2 ? 'active' : ''}`}
                     onClick={() => toggleFlip(2)}
                     style={{ transform: cardTransforms.get(2) || 'none' }}

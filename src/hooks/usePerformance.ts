@@ -9,7 +9,7 @@ export function useThrottle<T extends (...args: any[]) => void>(
     fps: number = 60
 ): T {
     const lastRun = useRef(Date.now());
-    const timeout = useRef<NodeJS.Timeout>();
+    const timeout = useRef<number | undefined>(undefined);
 
     const throttledFn = useRef((...args: Parameters<T>) => {
         const now = Date.now();
@@ -21,7 +21,7 @@ export function useThrottle<T extends (...args: any[]) => void>(
         } else {
             // Schedule for next available slot
             clearTimeout(timeout.current);
-            timeout.current = setTimeout(() => {
+            timeout.current = window.setTimeout(() => {
                 callback(...args);
                 lastRun.current = Date.now();
             }, delay - (now - lastRun.current));
@@ -42,10 +42,10 @@ export function useThrottle<T extends (...args: any[]) => void>(
  * Pauses animations when off-screen to save CPU
  */
 export function useIntersectionObserver(
-    ref: React.RefObject<Element>,
+    ref: React.RefObject<Element | null>,
     options: IntersectionObserverInit = {}
 ): boolean {
-    const [isVisible, setIsVisible] = React.useState(false);
+    const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
         const element = ref.current;
@@ -56,7 +56,7 @@ export function useIntersectionObserver(
                 setIsVisible(entry.isIntersecting);
             },
             {
-                threshold: 0.1, // Trigger when 10% visible
+                threshold: 0.1,
                 ...options,
             }
         );
@@ -75,7 +75,7 @@ export function useIntersectionObserver(
  * Detect if device is mobile for performance optimizations
  */
 export function useIsMobile(): boolean {
-    const [isMobile, setIsMobile] = React.useState(
+    const [isMobile, setIsMobile] = useState(
         typeof window !== 'undefined' && window.innerWidth <= 900
     );
 

@@ -207,10 +207,6 @@ hover-tilt.hidden {
 
 /* VStar Foil Effect */
 
-.vstar-card {
-    /* Container class - variables moved to content to access slotted values */
-}
-
 .vstar-card::part(tilt) {
     border-radius: 4.55% / 3.5% !important;
 }
