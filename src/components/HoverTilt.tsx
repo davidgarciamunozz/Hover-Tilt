@@ -176,8 +176,10 @@ export function HoverTiltDemo() {
                         <hover-tilt
                             className="card-aura [&::part(container)]:rounded-[4.55%/3.5%] luminance-beam vstar-card"
                             glare-intensity={1}
-                            tilt-factor={3}
-
+                            tilt-factor={typeof window !== 'undefined' && window.innerWidth <= 900 ? 2 : 3}
+                            spring-options={typeof window !== 'undefined' && window.innerWidth <= 900
+                                ? '{ "stiffness": 0.12, "damping": 0.18 }'
+                                : '{ "stiffness": 0.08, "damping": 0.15 }'}
                         >
                             <div className="vstar-card-content">
                                 <img

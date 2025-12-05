@@ -197,6 +197,12 @@ hover-tilt.hidden {
     .stacked-3d-content {
         width: 100%;
     }
+
+    /* Add smooth transitions for touch interactions */
+    .card__shine,
+    .card__glare {
+        transition: opacity 0.3s ease-out, background-position 0.2s ease-out;
+    }
 }
 
 /* VStar Foil Effect */
@@ -231,8 +237,7 @@ hover-tilt.hidden {
     --pointer-y: var(--gradient-y);
     --card-opacity: var(--hover-tilt-opacity);
 
-    /* Calculate background position similar to pokemon-cards-css */
-    /* adjust(percent.x, 0, 100, 37, 63) => 37% + percent * 0.26 */
+    /* Calculate background position */
     --background-x: calc(37% + (var(--hover-tilt-x) * 26%));
     --background-y: calc(33% + (var(--hover-tilt-y) * 34%));
 
@@ -251,13 +256,16 @@ hover-tilt.hidden {
     width: 100%;
     height: 100%;
 
-    /* Performance optimizations - force hardware acceleration */
+    /* Performance optimizations */
     transform: translate3d(0, 0, 0);
     -webkit-transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     transform-style: preserve-3d;
     -webkit-transform-style: preserve-3d;
+
+    /* CSS containment for better performance */
+    contain: layout style paint;
 }
 
 .vstar-card-content>* {
@@ -280,8 +288,10 @@ hover-tilt.hidden {
     width: 100%;
     height: 100%;
 
-    /* Performance hints for animated properties */
-    will-change: transform, opacity, background-position, filter;
+    /* Performance hints */
+    will-change: transform, opacity;
+    /* Force own compositing layer */
+    transform: translateZ(1px);
 }
 
 /* Masking */
@@ -385,52 +395,155 @@ hover-tilt.hidden {
     opacity: calc(var(--card-opacity)*(var(--pointer-from-center)*.75));
 }
 
-/* Mobile Performance Optimizations */
+/* Mobile Performance Optimizations - Balanced Approach */
 @media screen and (max-width: 900px) {
+    /* Keep all visual layers with full gradient fidelity */
 
-    /* Reduce complexity of shine effect on mobile */
+    /* Main shine layer - FULL 7 colors for visual fidelity */
     .vstar-card-content .card__shine,
     .vstar-card-content .card__shine:after {
-        /* Simplify background layers - remove one gradient layer */
-        background-size: var(--imgsize), 200% 500%, 200% 100%, 200% 100%;
+        --space: 5%;
+        /* Keep original spacing for color accuracy */
 
-        /* Reduce filter intensity */
-        filter: brightness(calc((var(--pointer-from-center) * .5) + .35)) contrast(1.5) saturate(1);
+        background-image:
+            var(--foil),
+            repeating-linear-gradient(0deg,
+                var(--sunpillar-clr-1) calc(var(--space)*1),
+                var(--sunpillar-clr-2) calc(var(--space)*2),
+                var(--sunpillar-clr-3) calc(var(--space)*3),
+                var(--sunpillar-clr-4) calc(var(--space)*4),
+                var(--sunpillar-clr-5) calc(var(--space)*5),
+                var(--sunpillar-clr-6) calc(var(--space)*6),
+                var(--sunpillar-clr-1) calc(var(--space)*7)),
+            repeating-linear-gradient(var(--angle),
+                #0e152e 0%,
+                hsl(180, 10%, 60%) 3.8%,
+                hsl(180, 29%, 66%) 4.5%,
+                hsl(180, 10%, 60%) 5.2%,
+                #0e152e 10%,
+                #0e152e 12%),
+            radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y),
+                hsla(0, 0%, 0%, 0.1) 12%,
+                hsla(0, 0%, 0%, 0.15) 20%,
+                hsla(0, 0%, 0%, 0.25) 120%);
+
+        /* Lighter blend modes for performance */
+        background-blend-mode: soft-light, hue, overlay;
+        background-size: var(--imgsize), 200% 600%, 280% 100%, 200% 100%;
+        background-position: center center, 0% var(--background-y), var(--background-x) var(--background-y), var(--background-x) var(--background-y);
+
+        /* Slightly reduced filters for performance */
+        filter: brightness(calc((var(--pointer-from-center) * .65) + .35)) contrast(1.9) saturate(1.15);
+        mix-blend-mode: color-dodge;
     }
 
     .vstar-card-content .card__shine:after {
-        /* Lighter blend mode for better performance */
-        mix-blend-mode: overlay;
-        filter: brightness(calc((var(--pointer-from-center) * .5) + .5)) contrast(1.2) saturate(1.2);
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+
+        background-size: var(--imgsize), 200% 350%, 190% 100%, 200% 100%;
+        background-position: center center, 0% var(--background-y), calc(var(--background-x) * -1) calc(var(--background-y) * -1), var(--background-x) var(--background-y);
+
+        filter: brightness(calc((var(--pointer-from-center) * .65) + .5)) contrast(1.45) saturate(1.4);
+        mix-blend-mode: screen;
+        /* Lighter than exclusion, better performance */
     }
 
-    /* Simplify ::before pseudo-element */
+    /* Optimize ::before */
     .vstar-card-content .card__shine::before {
-        opacity: 0.5;
-        /* Simpler blend mode */
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+
+        background-image: radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y),
+                hsla(190, 7%, 80%, 0.75) 0%,
+                hsla(260, 7%, 50%, 0.25) 45%,
+                hsl(310, 7%, 50%) 120%);
         mix-blend-mode: overlay;
+        /* Lighter than hard-light */
+        z-index: 2;
+        opacity: 0.75;
     }
 
-    /* Reduce glare complexity */
+    /* Optimize glare */
     .vstar-card-content .card__glare {
-        filter: brightness(.8) contrast(1.5);
-        /* Lighter blend mode */
+        filter: brightness(.72) contrast(1.9);
+
+        background-image:
+            radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y),
+                hsl(195, 90%, 90%) 5%,
+                hsl(300, 3%, 60%) 60%,
+                hsl(350, 0%, 15%) 140%);
+
         mix-blend-mode: overlay;
+        /* Lighter than hard-light */
+        opacity: calc(var(--card-opacity) * (var(--pointer-from-center) * .72));
     }
 }
 
-/* Extra small devices - further reduce complexity */
+/* Extra small devices - still keep full colors */
 @media screen and (max-width: 600px) {
 
     .vstar-card-content .card__shine,
     .vstar-card-content .card__shine:after {
-        /* Even simpler on very small screens */
-        background-blend-mode: soft-light, hue;
-        filter: brightness(calc((var(--pointer-from-center) * .4) + .4)) contrast(1.3) saturate(.9);
+        /* Keep all 7 colors even on small screens */
+        --space: 5%;
+
+        /* Slightly reduced background sizes for performance */
+        background-size: var(--imgsize), 200% 450%, 250% 100%, 200% 100%;
+
+        /* Lighter filters for performance */
+        filter: brightness(calc((var(--pointer-from-center) * .55) + .45)) contrast(1.6) saturate(1.05);
+    }
+
+    .vstar-card-content .card__shine:after {
+        filter: brightness(calc((var(--pointer-from-center) * .6) + .55)) contrast(1.35) saturate(1.25);
+        mix-blend-mode: screen;
+        opacity: 0.85;
     }
 
     .vstar-card-content .card__shine::before {
-        /* Reduce opacity further */
-        opacity: 0.3;
+        opacity: 0.6;
+    }
+
+    .vstar-card-content .card__glare {
+        filter: brightness(.78) contrast(1.6);
+        opacity: calc(var(--card-opacity) * 0.65);
+    }
+
+    /* Disable pointer-reactive masking on small screens */
+    .vstar-card-content .card__shine,
+    .vstar-card-content .card__shine::before,
+    .vstar-card-content .card__glare {
+        -webkit-mask-image: var(--mask);
+        mask-image: var(--mask);
+        -webkit-mask-size: cover;
+        mask-size: cover;
+    }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+    .card__shine,
+    .card__glare,
+    .card-flip-wrapper,
+    .card-flip-container {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    /* Use static effects for users who prefer reduced motion */
+    .vstar-card-content .card__shine {
+        background-image: var(--foil);
+        background-position: center center;
+        filter: brightness(1) contrast(1.1);
     }
 }
