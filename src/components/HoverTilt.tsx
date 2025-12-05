@@ -1,8 +1,12 @@
 import 'hover-tilt/web-component';
 import './styles.css'
 import { useState, useRef, useEffect } from 'react';
+import { useIntersectionObserver, useIsMobile } from '../hooks/usePerformance';
 
 export function HoverTiltDemo() {
+    // Performance optimizations
+    const isMobile = useIsMobile();
+
     // Track which cards have been flipped at least once
     const [firstFlipDone, setFirstFlipDone] = useState<Set<number>>(new Set());
     // Track rotation degrees for each card
@@ -13,6 +17,10 @@ export function HoverTiltDemo() {
     const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
     // Store transform values for each card
     const [cardTransforms, setCardTransforms] = useState<Map<number, string>>(new Map());
+
+    // Intersection observer for Charizard (most performance-intensive card)
+    const charizardRef = useRef<HTMLDivElement>(null);
+    const charizardVisible = useIntersectionObserver(charizardRef);
 
     // Calculate transform to center the active card
     useEffect(() => {
@@ -164,7 +172,10 @@ export function HoverTiltDemo() {
 
                 {/* Charizard - with flip */}
                 <div
-                    ref={el => { cardRefs.current[2] = el; }}
+                    ref={(el) => {
+                        cardRefs.current[2] = el;
+                        if (el) (charizardRef as any).current = el;
+                    }}
                     className={`card-flip-container ${!firstFlipDone.has(2) && rotations.get(2) ? 'first-flip' : ''} ${activeCard === 2 ? 'active' : ''}`}
                     onClick={() => toggleFlip(2)}
                     style={{ transform: cardTransforms.get(2) || 'none' }}
@@ -176,8 +187,8 @@ export function HoverTiltDemo() {
                         <hover-tilt
                             className="card-aura [&::part(container)]:rounded-[4.55%/3.5%] luminance-beam vstar-card"
                             glare-intensity={1}
-                            tilt-factor={typeof window !== 'undefined' && window.innerWidth <= 900 ? 2 : 3}
-                            spring-options={typeof window !== 'undefined' && window.innerWidth <= 900
+                            tilt-factor={isMobile ? 2 : 3}
+                            spring-options={isMobile
                                 ? '{ "stiffness": 0.12, "damping": 0.18 }'
                                 : '{ "stiffness": 0.08, "damping": 0.15 }'}
                         >
