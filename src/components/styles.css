@@ -1,3 +1,9 @@
+:root {
+    /* Card aura/glow effect colors */
+    --card-edge: hsl(47, 100%, 78%);
+    --card-glow: hsl(175, 100%, 90%);
+}
+
 main {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     display: grid;
@@ -5,10 +11,6 @@ main {
     min-height: 90svh;
     overflow: hidden;
     gap: 2rem;
-}
-
-body {
-    background: hsl(222, 20%, 95%);
 }
 
 .card {
@@ -112,6 +114,79 @@ input:focus {
     will-change: transform, filter;
 }
 
+/* Card flip container */
+.card-flip-container {
+    position: relative;
+    perspective: 600px;
+    transform-style: preserve-3d;
+    cursor: pointer;
+    will-change: transform;
+    transition: transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Active card - centered and scaled using transform only */
+.card-flip-container.active {
+    z-index: 1000;
+    /* Transform is applied inline via JavaScript */
+    transition: transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* The wrapper that actually rotates */
+.card-flip-wrapper {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transform: rotateY(var(--card-rotate-y, 0deg));
+}
+
+/* First flip does 360 degrees */
+.card-flip-container.first-flip .card-flip-wrapper {
+    transition: transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Individual card faces */
+.card-face {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
+}
+
+.card-face.back {
+    transform: rotateY(180deg) translateZ(1px);
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Aura glow effect */
+hover-tilt.card-aura::part(tilt) {
+    transition: box-shadow 0.4s ease;
+    border-radius: 0;
+    box-shadow:
+        0 0 3px -1px transparent,
+        0 0 2px 1px transparent,
+        0 0 5px 0px transparent,
+        0px 10px 20px -5px black,
+        0 2px 15px -5px black,
+        0 0 20px 0px transparent;
+}
+
+hover-tilt.card-aura:hover::part(tilt),
+hover-tilt.card-aura.active::part(tilt) {
+    box-shadow:
+        0 0 3px -1px white,
+        0 0 3px 1px var(--card-edge),
+        0 0 12px 2px var(--card-glow),
+        0px 10px 20px -5px black,
+        0 0 40px -30px var(--card-glow),
+        0 0 50px -20px var(--card-glow);
+}
+
+/* Hidden state for flipped cards */
+hover-tilt.hidden {
+    display: none;
+}
+
 /* Responsive layout tweaks */
 @media (max-width: 768px) {
     hover-tilt img {
@@ -122,4 +197,181 @@ input:focus {
     .stacked-3d-content {
         width: 100%;
     }
+}
+
+/* VStar Foil Effect */
+
+.vstar-card {
+    /* Container class - variables moved to content to access slotted values */
+}
+
+.vstar-card::part(tilt) {
+    border-radius: 4.55% / 3.5% !important;
+}
+
+.vstar-card-content {
+    /* Define sunpillar colors */
+    --sunpillar-1: hsl(2, 100%, 73%);
+    --sunpillar-2: hsl(53, 100%, 69%);
+    --sunpillar-3: hsl(93, 100%, 69%);
+    --sunpillar-4: hsl(176, 100%, 76%);
+    --sunpillar-5: hsl(228, 100%, 74%);
+    --sunpillar-6: hsl(283, 100%, 73%);
+
+    --sunpillar-clr-1: var(--sunpillar-1);
+    --sunpillar-clr-2: var(--sunpillar-2);
+    --sunpillar-clr-3: var(--sunpillar-3);
+    --sunpillar-clr-4: var(--sunpillar-4);
+    --sunpillar-clr-5: var(--sunpillar-5);
+    --sunpillar-clr-6: var(--sunpillar-6);
+
+    /* Map hover-tilt variables */
+    /* These are available here because this element is the slotted content */
+    --pointer-x: var(--gradient-x);
+    --pointer-y: var(--gradient-y);
+    --card-opacity: var(--hover-tilt-opacity);
+
+    /* Calculate background position similar to pokemon-cards-css */
+    /* adjust(percent.x, 0, 100, 37, 63) => 37% + percent * 0.26 */
+    --background-x: calc(37% + (var(--hover-tilt-x) * 26%));
+    --background-y: calc(33% + (var(--hover-tilt-y) * 34%));
+
+    /* Pointer from center - using opacity as a proxy for intensity/activation */
+    --pointer-from-center: var(--hover-tilt-opacity);
+
+    /* Images */
+    --mask: url(/cards/pokemon/charizard-foil-2.webp);
+    --foil: url(/cards/pokemon/charizard-foil-1.webp);
+
+    display: grid;
+    grid-template-areas: "card";
+    position: relative;
+    border-radius: inherit;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    transform: translateZ(0);
+    /* Fix for Safari/stacking context */
+}
+
+.vstar-card-content>* {
+    grid-area: card;
+    border-radius: inherit;
+}
+
+.vstar-card-content .card__front-img {
+    z-index: 1;
+    position: relative;
+}
+
+.card__shine,
+.card__glare {
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+}
+
+/* Masking */
+.vstar-card-content .card__shine,
+.vstar-card-content .card__shine::before,
+.vstar-card-content .card__shine::after {
+    -webkit-mask-image:
+        var(--mask),
+        radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y),
+            hsla(0, 0%, 100%, 0) 0%,
+            hsla(0, 0%, 100%, .5) 120%);
+    mask-image:
+        var(--mask),
+        radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y),
+            hsla(0, 0%, 100%, 0) 0%,
+            hsla(0, 0%, 100%, .5) 120%);
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-position: center center;
+    mask-position: center center;
+}
+
+/* Shine Layers */
+.vstar-card-content .card__shine,
+.vstar-card-content .card__shine:after {
+    --space: 5%;
+    --angle: 133deg;
+    --imgsize: cover;
+
+    background-image:
+        var(--foil),
+        repeating-linear-gradient(0deg,
+            var(--sunpillar-clr-1) calc(var(--space)*1),
+            var(--sunpillar-clr-2) calc(var(--space)*2),
+            var(--sunpillar-clr-3) calc(var(--space)*3),
+            var(--sunpillar-clr-4) calc(var(--space)*4),
+            var(--sunpillar-clr-5) calc(var(--space)*5),
+            var(--sunpillar-clr-6) calc(var(--space)*6),
+            var(--sunpillar-clr-1) calc(var(--space)*7)),
+        repeating-linear-gradient(var(--angle),
+            #0e152e 0%,
+            hsl(180, 10%, 60%) 3.8%,
+            hsl(180, 29%, 66%) 4.5%,
+            hsl(180, 10%, 60%) 5.2%,
+            #0e152e 10%,
+            #0e152e 12%),
+        radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y),
+            hsla(0, 0%, 0%, 0.1) 12%,
+            hsla(0, 0%, 0%, 0.15) 20%,
+            hsla(0, 0%, 0%, 0.25) 120%);
+
+    background-blend-mode: soft-light, hue, hard-light;
+    background-size: var(--imgsize), 200% 700%, 300% 100%, 200% 100%;
+    background-position: center center, 0% var(--background-y), var(--background-x) var(--background-y), var(--background-x) var(--background-y);
+
+    filter: brightness(calc((var(--pointer-from-center) * .75) + .25)) contrast(2) saturate(1.25);
+    mix-blend-mode: color-dodge;
+    opacity: var(--card-opacity);
+}
+
+.vstar-card-content .card__shine:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background-size: var(--imgsize), 200% 400%, 195% 100%, 200% 100%;
+    background-position: center center, 0% var(--background-y), calc(var(--background-x) * -1) calc(var(--background-y) * -1), var(--background-x) var(--background-y);
+
+    filter: brightness(calc((var(--pointer-from-center) * .75) + .5)) contrast(1.5) saturate(4);
+    mix-blend-mode: exclusion;
+}
+
+.vstar-card-content .card__shine::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background-image: radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y), hsla(190, 7%, 80%, 0.75) 0%, hsla(260, 7%, 50%, 0.25) 45%, hsl(310, 7%, 50%) 120%);
+    mix-blend-mode: hard-light;
+    z-index: 2;
+    opacity: 0.8;
+}
+
+/* Glare Layers */
+.vstar-card-content .card__glare {
+    filter: brightness(.7) contrast(2);
+
+    background-image:
+        radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y),
+            hsl(195, 90%, 90%) 5%,
+            hsl(300, 3%, 60%) 60%,
+            hsl(350, 0%, 15%) 150%);
+
+    mix-blend-mode: hard-light;
+    opacity: calc(var(--card-opacity)*(var(--pointer-from-center)*.75));
 }
